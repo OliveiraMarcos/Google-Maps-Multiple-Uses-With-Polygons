@@ -1,9 +1,9 @@
 Google Api Maps With Multiple Uses in Coordinates Polygon
 =========================================================
-#Portugues Descrição
+###Portugues Descrição
 Protótipo com diversas utilização de polígono, incluindo o cálculo de se um determinado ponto está dentro do polígono, utilizando as coordenadas de latitude e longitude.
 
-#English Description
+###English Description
 Prototype with use of various polygons , including the calculation of whether a given point is within the polygon by using the latitude and longitude coordinates
 
 References
