@@ -1,0 +1,728 @@
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Coordinates Different Polygons</title>
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+		<!-- jQuery library -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+		<!-- Latest compiled JavaScript -->
+		<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+		
+		<!-- Libraries google maps -->
+		<script src="http://maps.google.com/maps/api/js?sensor=false&v=3.21.5a&libraries=drawing&signed_in=true&libraries=places,drawing"></script>
+		
+		<!-- Font Awesome -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+		
+		<style>
+			#map{
+				width:100%; 
+				height:100%;
+			
+			}
+			.icon-img{
+			
+				height:18px;
+			}
+			.selecionado{
+				/**background: rgba(0, 0, 0, .2) !important;**/
+				background: rgba(255, 0, 0, .2) !important; /* For browsers that do not support gradients */
+				background: -webkit-radial-gradient(circle, rgba(255, 0, 0, .4), rgba(255, 255, 0, .4), rgba(100, 100, 100, .5)) !important; /* Safari */
+				background: -o-radial-gradient(circle, rgba(255, 0, 0, .4), rgba(255, 255, 0, .4), rgba(100, 100, 100, .5)) !important; /* Opera 11.6 to 12.0 */
+				background: -moz-radial-gradient(circle, rgba(255, 0, 0, .4), rgba(255, 255, 0, .4), rgba(100, 100, 100, .5)) !important; /* Firefox 3.6 to 15 */
+				background: radial-gradient(circle, rgba(255, 0, 0, .4), rgba(255, 255, 0, .4), rgba(100, 100, 100, .5)) !important; /* Standard syntax */
+
+			}
+		
+		</style>
+		
+		
+		
+	</head>
+	<body>
+			
+			<div class="container">
+				<div class="row">
+				<nav class="navbar navbar-default">
+					<div class="container-fluid">
+					<!-- Brand and toggle get grouped for better mobile display -->
+					<div class="navbar-header">
+					  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+						<span class="sr-only">Toggle navigation</span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					  </button>
+					  <a class="navbar-brand" href="#">Polygons</a>
+					</div>
+
+					<!-- Collect the nav links, forms, and other content for toggling -->
+					<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+					  <ul class="nav navbar-nav">
+						<li class="active"><a href="#">Maps <span class="sr-only">(current)</span></a></li>
+						
+						<li class="dropdown">
+						  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fa fa-upload"></i> Importar Poligono <span class="caret"></span></a>
+						  <ul class="dropdown-menu">
+							<li><a href="javascript:ActionFile('.csv');"><i class="fa fa-file-text"></i> CSV</a></li>
+							<li role="separator" class="divider"></li>
+							<li><a href="javascript:ActionFile('.kml');"><i class="fa fa-file-code-o"></i> KML</a></li>
+							
+						  </ul>
+						</li>
+						
+					  </ul>
+					  <form class="navbar-form navbar-left" role="search">
+						<div class="form-group">
+						  <input type="text" class="form-control" placeholder="Search" id="SearchIn">
+						  
+						</div>
+						<div class="btn-group">
+						  <button type="button" class="btn btn-default" id="btnMarker" onclick="atualizeMarker(this);"><img src="img/icon-industry.png" class="icon-img" title="Trabalho"> Trabalho
+						  </button>
+						  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="height: 34px;">
+							<span class="caret"></span>
+						  </button>
+						  <ul class="dropdown-menu">
+							<li><a href="javascript:void(0);" onclick="atualizeMarker(this);"><img src="img/icon-loja.png" class="icon-img" title="Loja"> Loja</a></li>
+							<li><a href="javascript:void(0);" onclick="atualizeMarker(this);"><img src="img/icon-home.png" class="icon-img" title="Casa"> Casa</a></li>
+							<li><a href="javascript:void(0);" onclick="atualizeMarker(this);"><img src="img/icon-industry.png" class="icon-img" title="Trabalho"> Trabalho</a></li>
+							<li><a href="javascript:void(0);" onclick="atualizeMarker(this);"><img src="img/icon-bank.png" class="icon-img" title="Banco"> Banco</a></li>
+						  </ul>
+						</div>						
+					  </form>
+					  
+					  <form class="navbar-form navbar-right" id="color-palette">
+						<button type="button" class="btn btn-default" title="Limpa o Poligno Selecionado" id="delete-button"><i class="fa fa-eraser"></i> Limpar</button>
+						<a href="#" class="btn btn-default" title="Salva o poligno em um arquivo .scv" id="save-button" ><i class="fa fa-floppy-o"></i> Salvar</a>
+					  </form>
+					</div><!-- /.navbar-collapse -->
+					</div><!-- /.container-fluid -->
+					</nav>
+					</div>
+					<div class="row">
+						
+						<div class="panel panel-default">
+							<div class="panel-heading">Mapa</div>
+							<input type="file" name="file" id="file" style="display:none;">
+							<div class="panel-body">
+								<div id="map">A</div>
+							</div>
+						</div>
+						
+						
+					</div>
+				</div>
+	</body>
+
+</html>
+
+<script>
+
+	/********************      PRIVATE		*********************/
+	var colorButtons = {};
+	var selectedShape;
+	var colors = ['#1E90FF', '#FF1493', '#32CD32', '#FF8C00', '#4B0082'];
+	var selectedColor;
+	var drawingManager;
+	var finalizado = false;
+	var myLat = -3.824164831099026;
+	var myLng = -38.520054681396484;
+	var placeMarkers = [];
+	var polygon_xy_coordinates = [];
+	var eps = 1e-15;
+	
+	function ActionFile(type){
+		var file = document.getElementById('file');
+		file.accept = type;
+		file.addEventListener('change', ReadFile, false);
+		file.click();
+		
+	}
+	function ReadFile(e){
+		if(this.files[0]){
+			var reader = new FileReader();
+			reader.readAsText(this.files[0], "");
+			reader.onload = function(evt){
+				var fileContents = evt.target.result;
+				if(file.accept == ".csv"){
+					parseCSV(fileContents);
+				}else if(file.accept == ".kml"){
+					parseKML(fileContents);
+				}
+			}
+			
+			
+		
+		}
+	}
+	/** Parse the .csv file containing lat; long; population; */
+	function parseCSV(fileContents){
+		var polygonCords = [];
+		var lines = fileContents.split("\n");
+		for(var i = 0; i < lines.length; i++){
+			/* $('#results').html(lines[i]); */
+
+			// Split line into non-empty cells
+			var data = $.grep(lines[i].split(","), function(x){
+				return x;
+			});
+
+			if(data.length == 2){
+				polygonCords.push(new google.maps.LatLng(data[0], data[1]));
+			}
+		}
+	
+		CreatePolygon(polygonCords);
+	}
+	/** Parse the .kml file containing lat; long; population; */
+	function parseKML(fileContents){
+		var oParser = new DOMParser();
+		var oDOM = oParser.parseFromString(fileContents, "text/xml");
+		var oPolygon = oDOM.getElementsByTagName('Polygon');
+		for(var j=0; j<oPolygon.length; j++){
+			var coordinates = oPolygon[j].getElementsByTagName('coordinates');
+			for(var l=0;l<coordinates.length;l++){
+				var oText= coordinates[l].textContent;
+				var txtRep = oText.replace(/,0.0/g,"\n")
+				var polygonCords = [];
+				var lines = txtRep.split("\n");
+				for(var i = 0; i < lines.length; i++){
+					/* $('#results').html(lines[i]); */
+		
+					// Split line into non-empty cells
+					var data = $.grep(lines[i].split(","), function(x){
+						return x;
+					});
+
+					if(data.length == 2){
+						polygonCords.push(new google.maps.LatLng(data[1], data[0]));
+					}
+				}
+			
+				CreatePolygon(polygonCords);
+				
+			}
+			
+		}
+		//var encodedUri = encodeURI(fileContents);
+		//var ctaLayer = new google.maps.KmlLayer({
+		//	url: 'file:///C:/Users/berp/Downloads/Mapa%20Bebeu.kml',
+		//	map: map
+		//});
+	}
+	function setSelection(shape) {
+
+		clearSelection();
+		selectedShape = shape;
+		shape.setEditable(true);
+		selectColor(shape.get('fillColor') || shape.get('strokeColor'));
+
+	}
+	function clearSelection() {
+
+		if (selectedShape) {
+			selectedShape.setEditable(false);
+			selectedShape = null;
+		}
+
+	}
+	function selectColor(color) {
+
+		selectedColor = color;
+
+		for (var i = 0; i < colors.length; ++i) {
+			var currColor = colors[i];
+			colorButtons[currColor].style.border = currColor == color ? '2px solid #789' : '2px solid #fff';
+		}
+
+		// Retrieves the current options from the drawing manager and replaces the
+		// stroke or fill color as appropriate.
+		var polylineOptions = drawingManager.get('polylineOptions');
+		polylineOptions.strokeColor = color;
+		drawingManager.set('polylineOptions', polylineOptions);
+
+		var rectangleOptions = drawingManager.get('rectangleOptions');
+		rectangleOptions.fillColor = color;
+		rectangleOptions.strokeColor= color;
+		rectangleOptions.strokeOpacity= 0.8;
+		rectangleOptions.strokeWeight= 2;
+		rectangleOptions.zIndex= 1;
+		drawingManager.set('rectangleOptions', rectangleOptions);
+
+		var circleOptions = drawingManager.get('circleOptions');
+		circleOptions.fillColor = color;
+		circleOptions.strokeColor= color;
+		circleOptions.strokeOpacity= 0.8;
+		circleOptions.strokeWeight= 2;
+		circleOptions.zIndex= 1;
+		drawingManager.set('circleOptions', circleOptions);
+
+		var polygonOptions = drawingManager.get('polygonOptions');
+		polygonOptions.fillColor = color;
+		polygonOptions.strokeColor= color;
+		polygonOptions.strokeOpacity= 0.8;
+		polygonOptions.strokeWeight= 2;
+		polygonOptions.zIndex= 1;
+		drawingManager.set('polygonOptions', polygonOptions);
+
+	}
+	function deleteNode(e) {
+
+		if (selectedShape) {
+
+			var length = selectedShape.getPath().length;
+
+			if (e.vertex != null && (length - 1 > 2)) {
+				selectedShape.getPath().removeAt(e.vertex);
+				return true;
+			} else {
+				return false;
+			}
+
+		}
+
+	}
+	function makeColorButton(color) {
+		var button = document.createElement('button');
+		button.className = 'btn';
+		button.type = 'button';
+		button.innerHTML = '<i class="fa fa-eye"></i>';
+		button.style.backgroundColor = color;
+		google.maps.event.addDomListener(button, 'click', function() {
+		  selectColor(color);
+		  setSelectedShapeColor(color);
+		});
+
+		return button;
+	}
+	function setSelectedShapeColor(color) {
+		if (selectedShape) {
+			if (selectedShape.type == google.maps.drawing.OverlayType.POLYLINE) {
+				selectedShape.set('strokeColor', color);
+			} else {
+				selectedShape.set('fillColor', color);
+			}
+		}
+	}
+	function buildColorPalette() {
+		var colorPalette = document.getElementById('color-palette');
+		for (var i = 0; i < colors.length; ++i) {
+			var currColor = colors[i];
+			var colorButton = makeColorButton(currColor);
+			colorPalette.appendChild(colorButton);
+			colorButtons[currColor] = colorButton;
+		}
+		selectColor(colors[0]);
+	}
+	function deleteSelectedShape() {
+		if (selectedShape) {
+			selectedShape.setMap(null);
+		}
+	}
+	function saveSelectedShape(){
+		var csvContent = "data:text/csv;charset=utf-8,";
+		var paths = selectedShape.getPath();
+		for (var i = 0; i < selectedShape.getPath().getLength(); i++) {
+			// .toUrlValue(5) limits number of decimals, default is 6 but can do more
+			csvContent += paths.getAt(i).lat() +", "+ paths.getAt(i).lng() + "\n";
+		} 
+		var encodedUri = encodeURI(csvContent);
+		this.href = encodedUri;
+		var retVal = prompt("Escreva o Nome da Área : ", "Area Nome");
+		this.download = retVal+".csv";
+		
+	}
+	function atualizeMarker(obj){
+		var viewAction = document.getElementById('btnMarker');
+		viewAction.innerHTML = obj.innerHTML;
+		viewAction.classList.toggle("selecionado");
+		google.maps.event.addListener(map, 'dblclick', function(event) {
+			viewAction.classList.remove("selecionado");
+			var imgPath = viewAction.firstChild.src;
+			var imgWidth = 32;
+			var imgHeight = 47
+			var image = new google.maps.MarkerImage(
+				imgPath ,       
+				/* Tamanho da imagem original */
+				new google.maps.Size(imgWidth, imgHeight),
+				/* The origin for this image is 0,0. */
+				new google.maps.Point(0,0),
+				/* Centro da imagem */
+				new google.maps.Point(imgWidth/2, imgHeight/2),
+				/* Tamanho da imagem no mapa */
+				new google.maps.Size(imgWidth, imgHeight)
+			);
+			var marker = new google.maps.Marker({
+				draggable: true,
+				map: map,
+				icon: image,
+				position: event.latLng,
+				title: viewAction.firstChild.title,
+				raiseOnDrag: false
+			});
+			var retVal = prompt("Escreva detalhes desta posição : ", "Eu estou aqui!");
+			
+			
+			google.maps.event.addListener(marker, "click", function (e) {
+				var ms = PointInsidePolygon(e.latLng)? " Dentro" : " Fora";
+				var iw = new google.maps.InfoWindow({
+					content: retVal +ms
+				});
+				iw.open(map, this); 
+			});	
+			google.maps.event.addListener(marker, "dblclick", function (e) { 
+				 this.setMap(null);
+			});
+			google.maps.event.clearListeners(map, "dblclick");
+		});
+		
+		
+	}
+	function CreatePolygon(cords){
+		
+		polygonOptions = {
+			paths: cords,
+			editable: true,
+			clickable: true,
+			strokeColor: selectedColor,
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillColor: selectedColor,
+			fillOpacity: 0.35,
+			zIndex: 1
+		};
+		
+		selectedShape = new google.maps.Polygon(polygonOptions);
+
+		selectedShape.type = 'polygon';
+
+		center = new google.maps.LatLng(myLat, myLng);
+		map.setCenter(center);
+
+		setSelection(selectedShape);
+		selectedShape.setEditable(true);
+
+		selectedShape.setMap(map);
+		
+		/**
+		 * deleta um vertece de um poligono
+		 */
+		google.maps.event.addListener(selectedShape, 'click', function(e) {
+			// quando um shape é clicado
+			setSelection(this);
+			var status = deleteNode(e);
+		});
+	
+	}
+	
+	function GenerateCirlcePolygon(radius, step, Lat, Lng) {
+
+		radius = radius / 111.111;
+
+		lat = Lat ? Lat : myLat;
+		lng = Lng ? Lng : myLng;
+
+		x = ((lat * Math.PI) / Math.PI); //rad
+		y = ((lng * Math.PI) / Math.PI); //rad
+
+		var steps = step ? step : 20;
+		var pi2 = Math.PI * 2;
+
+		var polygonCords = [];
+
+		vertexX = [];
+		vertexY = [];
+
+		for (var i = 0; i < steps; i++) {
+
+			var lat3 = x + radius * Math.cos(i / steps * pi2);
+			var lng3 = y + radius * Math.sin(i / steps * pi2);
+
+			latlng = new google.maps.LatLng(lat3, lng3);
+
+			vertexX.push(lat3);
+			vertexY.push(lng3);
+
+			polygonCords.push(latlng);
+
+		}
+		CreatePolygon(polygonCords);
+		
+
+	}
+	function GenereteRectanglePolygon(step){
+		var step = step ? step : 10;
+		var polygonCords = [];
+		//   _ _ _ _ _ _ 
+		//  |    _ _    |
+		//  |   |   |   |
+		//[NE, SW, NW, SE]
+		//  |_ _|_ _|   |
+		//      |_ _ _ _|
+		
+		//[NW]----------[NE]
+		// |             |
+		// |             |
+		// |             |
+		//[SW]----------[SE]
+		var NE = selectedShape.getBounds().getNorthEast();
+		var SW = selectedShape.getBounds().getSouthWest();
+		var NW = new google.maps.LatLng(SW.lat(),NE.lng());
+		var SE = new google.maps.LatLng(NE.lat(),SW.lng());
+		//NW --> NE
+		polygonCords.push(NW);
+		GeneratePointOfAToB(polygonCords, NW, NE, step);
+		//NE --> SE
+		polygonCords.push(NE);
+		GeneratePointOfAToB(polygonCords, NE, SE, step);
+		//SE --> SW
+		polygonCords.push(SE);
+		GeneratePointOfAToB(polygonCords, SE, SW, step);
+		//SW --> NW
+		polygonCords.push(SW);
+		GeneratePointOfAToB(polygonCords, SW, NW, step);
+		CreatePolygon(polygonCords);
+		
+	}
+	function GeneratePointOfAToB(Cords, LatLngA, LatLngB, step){
+	
+		var DQx = (LatLngB.lat() - LatLngA.lat())/step;
+		var DQy = (LatLngB.lng() - LatLngA.lng())/step;
+		var LatLngAux = LatLngA;
+		for(var i = 1; i <=step; i++){
+			LatLngAux = new google.maps.LatLng(LatLngAux.lat()+DQx, LatLngAux.lng()+DQy);
+			Cords.push(LatLngAux);
+		}
+		return Cords;
+	}
+	
+	/* Verifica a orientacao do vetor(b-a) em relacao ao vetor (c-a) 
+	   ccw = 1, cw = -1, colinear = 0
+	*/
+	function Ccw(a, b, c){
+		var aux1 = new CoordXY(b.lat() - a.lat(), b.lng() - a.lng()); //b-a
+		var aux2 = new CoordXY(c.lat() - a.lat(), c.lng() - a.lng()); //c-a
+		var res = aux1.x * aux2.y - aux1.y * aux2.x;
+		return res > eps ? 1 : res < -eps ? -1 : 0;
+	}
+	/* Decide se o ponto q esta entre os pontos a e b */
+	function Between(q, a, b){
+		var dot = (a.lat() - q.lat())*(b.lat() - q.lat()) + (a.lng() - q.lng())*(b.lng() - q.lng());
+		return (Ccw(q, a, b) == 0 && dot <= -eps);
+	}
+	/* Decide se o ponto esta dentro do poligono simples */
+	function PointInsidePolygon(p){
+		if(!selectedShape){
+			alert('Poligno não selecionado!');
+			return 0;
+		}
+		var paths = selectedShape.getPath();
+		var n = paths.getLength();
+		var cross = 0;
+		for (var i=1; i<=n; i++){
+		var q = paths.getAt(i-1);
+		var r = paths.getAt(i%n);
+		//alert(r + ', q: ' + q + ', p: ' + p)
+		if (Between(p, q, r)){
+			alert('between');
+			return 1;
+		}
+		if (q.lng() > r.lng()){
+			var tmp = q;
+			q = r;
+			r = tmp;
+		}
+		if (q.lng() < p.lng() && r.lng() >= p.lng() && Ccw(p, q, r) > 0) cross++;
+		}
+		return cross % 2;
+	}
+	function GetCoordinatesXY(latLng){
+		var XY = new CoordXY(latLng.lat(), latLng.lng());
+		return XY;
+	}
+	
+	
+	var CoordXY = function(lat, lng){
+		this.x = lat;
+		this.y = lng;
+	}
+	
+	/********************      PUBLIC		*********************/
+
+	var map;
+	
+	function initialize(){
+		map = new google.maps.Map( document.getElementById('map'), { //var
+			zoom: 12,//10,
+			center: new google.maps.LatLng(myLat, myLng),//(22.344, 114.048),
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			disableDefaultUI: false,
+			disableDoubleClickZoom: true,
+			zoomControl: true
+		});
+		
+		var polyOptions = {
+          strokeWeight: 0,
+          fillOpacity: 0.45,
+          editable: true
+        };
+        // Creates a drawing manager attached to the map that allows the user to draw
+        // markers, lines, and shapes.
+        drawingManager = new google.maps.drawing.DrawingManager({
+			drawingMode: google.maps.drawing.OverlayType.POLYGON,
+			drawingControlOptions: {
+				drawingModes: [google.maps.drawing.OverlayType.CIRCLE, google.maps.drawing.OverlayType.RECTANGLE, google.maps.drawing.OverlayType.POLYGON]
+			},
+			markerOptions: {
+				draggable: true,
+				editable: true,
+			},
+			polylineOptions: {
+				editable: true
+			},
+			rectangleOptions: polyOptions,
+			circleOptions: polyOptions,
+			polygonOptions: polyOptions,
+			map: map
+        });
+		
+		google.maps.event.addListener(drawingManager, 'overlaycomplete', function(e) {
+			if (e.type != google.maps.drawing.OverlayType.MARKER) {
+				// Switch back to non-drawing mode after drawing a shape.
+				drawingManager.setDrawingMode(null);
+
+				// Add an event listener that selects the newly-drawn shape when the user
+				// mouses down on it.
+				var newShape = e.overlay;
+				newShape.type = e.type;
+				
+				
+				
+				setSelection(newShape);
+				// se for do tipo CIRCLE
+				if (e.type == google.maps.drawing.OverlayType.CIRCLE) {
+
+					//newShape.setOptions({
+					//	center: new google.maps.LatLng(myLat, myLng)
+					//});
+
+					var radius = Math.round(newShape.getRadius()) / 1000;
+					center = newShape.center;
+
+					//console.log('POS: ' + center.Xa + ',' + center.Ya);
+					//console.log('Raio: ' + radius);
+
+					newShape.setMap(null);
+					GenerateCirlcePolygon(radius, 20,center.lat(), center.lng());
+
+					//console.log('CIRCLE finalizado');
+					finalizado = true;
+				}
+				// se for do tipo POLYGON
+				else if (e.type == google.maps.drawing.OverlayType.POLYGON) {
+
+					/**
+					 * deleta um vertece de um poligono
+					 */
+					google.maps.event.addListener(selectedShape, 'click', function(e) {
+						// quando um shape é clicado
+						setSelection(this);
+						var status = deleteNode(e);
+					});
+					//console.log('POLYGON finalizado');
+					finalizado = true;
+				// se for do tipo RECTANGLE
+				}else if(e.type == google.maps.drawing.OverlayType.RECTANGLE){
+					newShape.setMap(null);
+					GenereteRectanglePolygon();
+					finalizado = true;
+				}
+				
+				
+				
+			}
+		
+		
+		
+		
+		});
+		
+		// Clear the current selection when the drawing mode is changed, or when the
+        // map is clicked.
+        google.maps.event.addListener(drawingManager, 'drawingmode_changed', clearSelection);
+        google.maps.event.addListener(map, 'click', clearSelection);
+        google.maps.event.addDomListener(document.getElementById('delete-button'), 'click', deleteSelectedShape);
+		
+		//Save Selected Shape
+		google.maps.event.addDomListener(document.getElementById('save-button'), 'click', saveSelectedShape);
+		buildColorPalette();
+		
+		var input = document.getElementById('SearchIn');
+		input.addEventListener('keypress', function(e) {
+			if (event.keyCode == 13) {
+				//event.preventDefault();
+				event.returnValue = false;
+			}
+		});
+		searchBox = new google.maps.places.SearchBox( //var
+          /** @type {HTMLInputElement} */(input));
+		// Listen for the event fired when the user selects an item from the
+        // pick list. Retrieve the matching places for that item.
+        google.maps.event.addListener(searchBox, 'places_changed', function() {
+          var places = searchBox.getPlaces();
+
+          if (places.length == 0) {
+            return;
+          }
+          for (var i = 0, marker; marker = placeMarkers[i]; i++) {
+            marker.setMap(null);
+          }
+
+          // For each place, get the icon, place name, and location.
+          placeMarkers = [];
+          var bounds = new google.maps.LatLngBounds();
+          for (var i = 0, place; place = places[i]; i++) {
+            var image = {
+              url: place.icon,
+              size: new google.maps.Size(71, 71),
+              origin: new google.maps.Point(0, 0),
+              anchor: new google.maps.Point(17, 34),
+              scaledSize: new google.maps.Size(25, 25)
+            };
+
+            // Create a marker for each place.
+            var marker = new google.maps.Marker({
+              map: map,
+              icon: image,
+              title: place.name,
+              position: place.geometry.location
+            });
+
+            placeMarkers.push(marker);
+
+            bounds.extend(place.geometry.location);
+          }
+
+          map.fitBounds(bounds);
+        });
+
+        // Bias the SearchBox results towards places that are within the bounds of the
+        // current map's viewport.
+        google.maps.event.addListener(map, 'bounds_changed', function() {
+          var bounds = map.getBounds();
+          searchBox.setBounds(bounds);
+        }); //////////////////////
+		
+		
+      
+   }
+	
+	
+	google.maps.event.addDomListener(window, 'load', initialize);
+</script>
+
+
