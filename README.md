@@ -9,6 +9,9 @@ Prototype with use of various polygons , including the calculation of whether a 
 References
 ==========
 https://kuniga.wordpress.com/2010/11/19/ponto-dentro-de-poligono/
+
 https://gist.github.com/anonymous/68b8f6a586c512cfc768
+
 https://github.com/kunigami/symbol-maps
+
 http://ctw2011.dia.uniroma3.it/ctw_proceedings.pdf#page=109
